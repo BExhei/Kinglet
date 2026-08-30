@@ -1,0 +1,35 @@
+node_modules
+dist
+src-tauri/target
+src-tauri/gen/schemas
+.DS_Store
+*.local
+
+# local docs / progress — not pushed
+docs/
+PROGRESS.md
+
+# scratch
+*.mjs
+fulltest.*
+fontcheck.*
+fonttest.*
+fontprobe.*
+printtest.*
+encprobe.*
+mdprobe.*
+render-fulltest.*
+
+# build artifacts (published via GitHub Releases, not committed)
+*.exe
+*.msi
+*.nsis
+*.sig
+
+# signing key (kept in user config, never committed)
+signing.key
+signing.key.pub
+
+# OS
+Thumbs.db
+desktop.ini

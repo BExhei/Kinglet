@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kinglet</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body data-theme="light">
+  <div id="app">
+
+    <div id="toolbar">
+      <div id="toolbar-row1">
+        <nav id="menubar">
+          <div class="menu-item" data-menu="file">
+            <span class="menu-label" data-i18n="menu_file">文件</span>
+            <div class="menu-dropdown" id="menu-file">
+              <button id="menu-open" data-i18n="menu_open">打开文件…<span class="shortcut">Ctrl+O</span></button>
+              <button id="menu-print" data-i18n="menu_print">打印…<span class="shortcut">Ctrl+P</span></button>
+            </div>
+          </div>
+          <div class="menu-item" data-menu="view">
+            <span class="menu-label" data-i18n="menu_view">视图</span>
+            <div class="menu-dropdown" id="menu-view">
+              <button id="menu-toggle-sidebar" data-i18n="menu_toggle_sidebar">切换侧栏<span class="shortcut">Ctrl+\</span></button>
+              <button id="menu-toggle-theme" data-i18n="menu_toggle_theme">切换深浅色<span class="shortcut">Ctrl+Shift+L</span></button>
+            </div>
+          </div>
+          <div class="menu-item" data-menu="settings">
+            <span class="menu-label" data-i18n="menu_settings">设置</span>
+            <div class="menu-dropdown" id="menu-settings">
+              <button id="menu-ui-settings" data-i18n="menu_ui_settings">界面设置<span class="shortcut">Ctrl+,</span></button>
+              <button id="menu-backup-settings" data-i18n="menu_backup_settings">备份设置</button>
+            </div>
+          </div>
+          <div class="menu-item" data-menu="help">
+            <span class="menu-label" data-i18n="menu_help">帮助</span>
+            <div class="menu-dropdown" id="menu-help">
+              <button id="menu-about" data-i18n="menu_about">关于 Kinglet</button>
+              <button id="menu-check-update" data-i18n="menu_check_update">检查更新</button>
+            </div>
+          </div>
+        </nav>
+        <div id="toolbar-controls">
+        </div>
+      </div>
+      <div id="toolbar-row2">
+        <div id="tabs" role="tablist"></div>
+        <button id="new-tab-btn" title="打开文件 (Ctrl+O)">+</button>
+        <div id="tab-controls">
+          <button id="theme-toggle-btn" title="切换深浅色 (Ctrl+Shift+L)">◐</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="body">
+
+      <aside id="sidebar">
+        <section id="search-section" class="side-section fixed-bottom">
+          <div class="search-box">
+            <input id="search-input" type="search" placeholder="页内查找…" data-i18n-placeholder="sidebar_search_placeholder" data-i18n-placeholder="sidebar_search_placeholder" autocomplete="off" />
+            <span id="search-count"></span>
+          </div>
+          <div id="search-nav" class="hidden">
+            <button id="search-prev" title="上一个" data-i18n-title="sidebar_search_prev">↑</button>
+            <button id="search-next" title="下一个" data-i18n-title="sidebar_search_next">↓</button>
+            <button id="search-clear" title="清除" data-i18n-title="sidebar_search_clear">×</button>
+          </div>
+        </section>
+
+        <nav id="toc-section" class="side-section">
+          <h2 class="side-title" data-i18n="sidebar_toc_title">目录</h2>
+          <ul id="toc-list"></ul>
+        </nav>
+      </aside>
+
+      <div id="floating-search" class="hidden">
+        <input id="floating-search-input" type="search" placeholder="页内查找…" autocomplete="off" />
+        <span id="floating-search-count"></span>
+        <button id="floating-search-prev" title="上一个">↑</button>
+        <button id="floating-search-next" title="下一个">↓</button>
+        <button id="floating-search-clear" title="关闭">✕</button>
+      </div>
+      <main id="content-area">
+        <div id="welcome">
+          <h1>Kinglet</h1>
+          <p class="welcome-sub" data-i18n="welcome_sub">开箱即读，专注不打断</p>
+          <p class="welcome-hint">打开一个 .md 或 .txt 文件，或直接拖进来。</p>
+          <button id="open-file-btn" class="primary-btn">打开文件</button>
+        </div>
+        <div id="document-view" class="hidden" tabindex="0"></div>
+      </main>
+
+    </div>
+
+  </div>
+
+  <div id="settings-overlay" class="hidden"></div>
+  <aside id="settings-panel" class="hidden" aria-label="设置">
+    <header id="settings-head">
+      <h2 data-i18n="settings_title">设置</h2>
+      <button id="settings-close" title="关闭 (Esc)" data-i18n-title="settings_close_title">×</button>
+    </header>
+    <div id="settings-tabs" role="tablist">
+      <button class="set-tab active" data-tab="ui">界面</button>
+      <button class="set-tab" data-tab="backup">备份</button>
+    </div>
+    <div id="settings-body">
+
+    <div class="tab-pane" data-pane="ui">
+
+      <section class="set-section">
+        <h3 class="set-title">一键方案</h3>
+        <div id="preset-cards">
+          <button class="preset-card" data-preset="day">
+            <span class="preset-name">日间阅读</span>
+            <span class="preset-desc">纸白 · 衬线 · 16px</span>
+          </button>
+          <button class="preset-card" data-preset="eyecare">
+            <span class="preset-name">护眼长读</span>
+            <span class="preset-desc">米黄 · 衬线 · 17px</span>
+          </button>
+          <button class="preset-card" data-preset="night">
+            <span class="preset-name">夜间</span>
+            <span class="preset-desc">夜间 · 无衬线 · 16px</span>
+          </button>
+          <button class="preset-card" data-preset="compact">
+            <span class="preset-name">紧凑速览</span>
+            <span class="preset-desc">暖纸 · 无衬线 · 14px</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">背景</h3>
+        <div id="theme-swatches">
+          <button class="swatch" data-theme-val="white" title="纸白"><span class="sw-dot" style="background:#ffffff"></span><span class="sw-label">纸白</span></button>
+          <button class="swatch" data-theme-val="light" title="暖纸"><span class="sw-dot" style="background:#f7f7f5"></span><span class="sw-label">暖纸</span></button>
+          <button class="swatch" data-theme-val="sepia" title="米黄"><span class="sw-dot" style="background:#f7f0dd"></span><span class="sw-label">米黄</span></button>
+          <button class="swatch" data-theme-val="green" title="青苹果"><span class="sw-dot" style="background:#e3edcd"></span><span class="sw-label">青苹果</span></button>
+          <button class="swatch" data-theme-val="dark" title="夜间"><span class="sw-dot" style="background:#1a1a1c"></span><span class="sw-label">夜间</span></button>
+          <button class="swatch" data-theme-val="black" title="纯黑"><span class="sw-dot" style="background:#000000"></span><span class="sw-label">纯黑</span></button>
+        </div>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">正文字体</h3>
+        <div class="seg" id="font-choices">
+          <button class="seg-btn" data-font-val="sans">无衬线</button>
+          <button class="seg-btn" data-font-val="serif">衬线</button>
+          <button class="seg-btn" data-font-val="kai">楷体</button>
+          <button class="seg-btn" data-font-val="custom">自定义</button>
+        </div>
+        <div id="custom-font-row">
+          <div id="font-file-line">
+            <button id="font-pick" title="点击选择字体文件">
+              <span id="font-file-name">点击选择字体文件…</span>
+            </button>
+            <button id="font-clear" title="清除">×</button>
+          </div>
+          <p class="set-note" id="font-hint">支持 .ttf / .otf / .woff2 / .ttc。只记路径不复制文件，原文件移走则失效。</p>
+        </div>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">字号</h3>
+        <div class="stepper">
+          <button id="fs-minus" title="减小">−</button>
+          <span id="fs-value">15px</span>
+          <button id="fs-plus" title="增大">+</button>
+        </div>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">行距</h3>
+        <div class="seg" id="lh-choices">
+          <button class="seg-btn" data-lh-val="1.6">紧凑</button>
+          <button class="seg-btn" data-lh-val="1.8">标准</button>
+          <button class="seg-btn" data-lh-val="2.1">宽松</button>
+        </div>
+      </section>
+
+            <section class="set-section">
+        <h3 class="set-title">版式</h3>
+        <div id="align-choices" class="seg">
+          <button class="align-btn active" data-align-val="default" data-i18n-title="align_default" title="默认（跟随文档）"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="3.5" width="14" height="17" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></g></svg></button>
+          <button class="align-btn" data-align-val="justify" data-i18n-title="align_justify" title="两端对齐末行左对齐"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4.5" y="5" width="15" height="2" rx="1"/><rect x="4.5" y="9" width="15" height="2" rx="1"/><rect x="4.5" y="13" width="15" height="2" rx="1"/><rect x="4.5" y="17" width="8" height="2" rx="1"/></g></svg></button>
+          <button class="align-btn" data-align-val="left" data-i18n-title="align_left" title="左对齐"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4.5" y="5" width="15" height="2" rx="1"/><rect x="4.5" y="9" width="10" height="2" rx="1"/><rect x="4.5" y="13" width="13" height="2" rx="1"/><rect x="4.5" y="17" width="8" height="2" rx="1"/></g></svg></button>
+          <button class="align-btn" data-align-val="center" data-i18n-title="align_center" title="居中"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4.5" y="5" width="15" height="2" rx="1"/><rect x="7" y="9" width="10" height="2" rx="1"/><rect x="5.5" y="13" width="13" height="2" rx="1"/><rect x="8" y="17" width="8" height="2" rx="1"/></g></svg></button>
+          <button class="align-btn" data-align-val="right" data-i18n-title="align_right" title="右对齐"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4.5" y="5" width="15" height="2" rx="1"/><rect x="9.5" y="9" width="10" height="2" rx="1"/><rect x="6.5" y="13" width="13" height="2" rx="1"/><rect x="11.5" y="17" width="8" height="2" rx="1"/></g></svg></button>
+          <button class="align-btn" data-align-val="justify-right" data-i18n-title="align_justify_right" title="两端对齐末行右对齐"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><rect x="4.5" y="5" width="15" height="2" rx="1"/><rect x="4.5" y="9" width="15" height="2" rx="1"/><rect x="4.5" y="13" width="15" height="2" rx="1"/><rect x="11.5" y="17" width="8" height="2" rx="1"/></g></svg></button>
+        </div>
+      </section>
+
+
+    </div>
+
+    <div class="tab-pane hidden" data-pane="backup">
+
+      <section class="set-section">
+        <h3 class="set-title">导出</h3>
+        <p class="set-note">把界面设置和最近打开列表存成一个 JSON 文件。</p>
+        <button class="set-btn" id="backup-export">导出配置…</button>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">导入</h3>
+        <p class="set-note">从备份文件恢复。当前设置会被覆盖。</p>
+        <button class="set-btn" id="backup-import">导入配置…</button>
+      </section>
+
+      <section class="set-section">
+        <h3 class="set-title">重置</h3>
+        <p class="set-note">清空界面设置与最近打开记录，回到初装状态。</p>
+        <button class="set-btn danger" id="backup-reset">清空全部数据</button>
+      </section>
+
+      <p id="backup-status" class="set-note"></p>
+
+    </div>
+
+    </div>
+    <footer id="settings-foot">
+      <button id="settings-reset">恢复界面默认</button>
+    </footer>
+  </aside>
+
+  <div id="about-overlay" class="hidden"></div>
+  <div id="about-panel" class="hidden" role="dialog" aria-label="关于 Kinglet">
+    <button id="about-close" title="关闭 (Esc)">×</button>
+    <div class="about-app">
+      <div class="about-wordmark">Kinglet</div>
+      <div class="about-version">v<span id="about-version">1.0.0</span></div>
+    </div>
+    <p class="about-tagline" data-i18n="about_tagline"></p>
+    <div class="about-body">
+      <div class="about-row">
+        <span class="about-label" data-i18n="about_github"></span>
+        <a id="about-github" href="https://github.com/BExhei/Kinglet" target="_blank" rel="noopener noreferrer">github.com/BExhei/Kinglet</a>
+      </div>
+      <div class="about-row">
+        <span class="about-label" data-i18n="about_license"></span>
+        <span>GPL-3.0</span>
+      </div>
+    </div>
+    <p class="about-copyright">© 2026 BExhei</p>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+
+</html>

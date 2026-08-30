@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "notes": "Kinglet v1.0.0 — 首个公开版本",
+  "pub_date": "2026-08-30T18:05:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTMUVMaUE1MElBMkljTytrSk8zTGExWVFLYS92V25iQXFFVFN2WitjTWlzRVgwVlQ5K2Jhd2dlN09sejZJUThKak9rSnhxWGQ5NEg0RlE3NUNNSGRlc3phdEtCbGFkVFFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg4MDgzOTk2CWZpbGU6S2luZ2xldF8xLjAuMF94NjQtc2V0dXAuZXhlCkJ6Wk9PWUZxMC9kaDhrS3lSTUxyemV6aVJoK1dSZUFKcUV3YmF5b1ZkVTMzb2dOcGx2VStUMTRRano2bmpEYlNFTmhkQnB0QlJ5SzFwYlM3d2g1YkRnPT0K",
+      "url": "https://github.com/BExhei/Kinglet/releases/download/v1.0.0/Kinglet_1.0.0_x64-setup.exe"
+    }
+  }
+}

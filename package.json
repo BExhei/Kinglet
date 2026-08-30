@@ -1,0 +1,34 @@
+{
+  "name": "kinglet",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Kinglet — Open it, read it — distraction-free",
+  "author": "BExhei",
+  "license": "GPL-3.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
+    "@tauri-apps/plugin-opener": "^2",
+    "@tauri-apps/plugin-updater": "^2.10.1",
+    "dompurify": "^3",
+    "highlight.js": "^11.12.0",
+    "katex": "^0.18.4",
+    "marked": "^17",
+    "marked-footnote": "^1.4.0",
+    "marked-highlight": "^2.2.4"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "vite": "^7"
+  }
+}

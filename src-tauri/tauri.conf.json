@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Kinglet",
+  "version": "1.0.0",
+  "identifier": "com.kinglet.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Kinglet",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 720,
+        "minHeight": 480,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "assetProtocol": {
+        "enable": true,
+        "scope": []
+      },
+      "csp": "default-src 'self'; img-src 'self' file: asset: http: https: data:; style-src 'self' 'unsafe-inline'; font-src 'self' data: asset: http://asset.localhost; connect-src ipc: http://ipc.localhost ws://localhost:5173 http://localhost:5173"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico",
+        "uninstallerIcon": "icons/icon.ico",
+        "installerHooks": "installer-hooks.nsh",
+        "languages": [
+          "SimpChinese"
+        ],
+        "displayLanguageSelector": false
+      }
+    },
+    "resources": [
+      "icons/md-file.ico"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "fileAssociations": [
+      {
+        "ext": [
+          "md",
+          "markdown"
+        ],
+        "name": "Markdown",
+        "description": "Markdown document",
+        "role": "Editor"
+      }
+    ],
+    "publisher": "BExhei",
+    "copyright": "© 2026 BExhei",
+    "shortDescription": "Kinglet — Open it, read it — distraction-free",
+    "longDescription": "Kinglet is a clean, local Markdown reader for Windows. It opens and formats .md / .txt files with per-file scroll position, a left outline, recent files and in-page search.",
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://raw.githubusercontent.com/BExhei/Kinglet/main/updates/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ4MDA0MkU3ODBCODEwQjUKUldTMUVMaUE1MElBMkg3ei9HQ0FudlZCQlVoN0dXak95R0k4S2x2MEQ2YnJVMkpna0dEdGQyUTEK",
+      "windows": {
+        "installMode": "basicUi"
+      }
+    }
+  }
+}
