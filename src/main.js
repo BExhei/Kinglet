@@ -13,7 +13,7 @@ import hljs from "highlight.js/lib/core";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import STRINGS from "./strings.js";
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 import bash from "highlight.js/lib/languages/bash";
 import c from "highlight.js/lib/languages/c";
 import cpp from "highlight.js/lib/languages/cpp";
