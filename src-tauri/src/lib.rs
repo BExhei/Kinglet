@@ -84,6 +84,10 @@ pub fn run() {
             }
         }))
         .setup(|app| {
+            // 窗口状态插件恢复后再显示，避免闪一下默认位置
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+            }
             let args: Vec<String> = std::env::args().collect();
             let pending = args
                 .iter()
