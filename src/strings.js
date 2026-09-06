@@ -117,6 +117,7 @@ const STRINGS = {
   update_available_title: "发现新版本 v{version}！",
   update_available_body: "{notes}\n\n是否现在下载并安装？",
   update_confirm_btn: "更新",
+  update_skip: "稍后再说",
   update_no_update: "当前已是最新版本",
   update_browser_mode: "浏览器模式下无法检查更新",
   update_fail: "检查更新失败：",
@@ -124,7 +125,7 @@ const STRINGS = {
 
   // ===== 关于 =====
   about_title: "\u5173\u4e8e Kinglet",
-  about_tagline: "开箱即读，专注不打断 \u00b7 Open it, read it — distraction-free",
+  about_tagline: "开箱即读，专注不打断\nOpen it, read it — distraction-free",
   about_github: "GitHub \u4ed3\u5e93",
   about_license: "\u5f00\u6e90\u534f\u8bae",
   about_close_title: "\u5173\u95ed (Esc)",

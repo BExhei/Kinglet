@@ -1,12 +1,22 @@
-use std::sync::Mutex;
+use std::collections::VecDeque;
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
 
-use tauri::Manager;
 use tauri::Emitter;
+use tauri::Manager;
 use tauri_plugin_fs::FsExt;
 
+/// 模块级静态队列——在 single-instance 回调中使用，不依赖 setup。
+/// Windows `%1` 逐文件调用 exe，single-instance 回调可能在 setup 之前触发，
+/// 此时 AppState 尚未初始化，只有静态变量可用。
+static QUEUED_FILES: OnceLock<Mutex<VecDeque<PathBuf>>> = OnceLock::new();
+
+fn static_queue() -> &'static Mutex<VecDeque<PathBuf>> {
+    QUEUED_FILES.get_or_init(|| Mutex::new(VecDeque::new()))
+}
+
 struct AppState {
-    pending_file: Mutex<Option<PathBuf>>,
+    pending_files: Mutex<Vec<PathBuf>>,
 }
 
 #[tauri::command]
@@ -61,8 +71,33 @@ fn allow_save_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn get_pending_file(state: tauri::State<'_, AppState>) -> Option<PathBuf> {
-    state.pending_file.lock().ok()?.take()
+fn get_pending_files(state: tauri::State<'_, AppState>) -> Vec<String> {
+    state
+        .pending_files
+        .lock()
+        .ok()
+        .map(|mut v| {
+            v.drain(..)
+                .map(|p| p.to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// 从静态队列中取出所有排队的文件路径。
+/// single-instance 回调在 setup 之前触发时，文件存在静态队列里；
+/// 前端每秒轮询一次此命令来 drain。
+#[tauri::command]
+fn drain_queued_files() -> Vec<String> {
+    static_queue()
+        .lock()
+        .ok()
+        .map(|mut q| {
+            q.drain(..)
+                .map(|p| p.to_string_lossy().into_owned())
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 pub fn run() {
@@ -73,29 +108,50 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
-            // 第二个实例启动时，把文件路径传给已有窗口
-            if let Some(path) = argv.get(1).filter(|a| !a.starts_with('-')) {
-                let _ = app.emit("open-file", path.to_string());
+            let files: Vec<String> = argv
+                .iter()
+                .skip(1)
+                .filter(|a| !a.starts_with('-'))
+                .cloned()
+                .collect();
+
+            // 存入静态队列（不依赖 AppState）
+            if let Ok(mut q) = static_queue().lock() {
+                for f in &files {
+                    q.push_back(PathBuf::from(f));
+                }
             }
-            // 窗口最小化时 set_focus 无效，需要先恢复
+
+            // 同时 emit 事件（前端 listen 就绪后能直接收到）
+            for f in &files {
+                let _ = app.emit("open-file", f.clone());
+            }
+
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.unminimize();
                 let _ = window.set_focus();
             }
         }))
         .setup(|app| {
-            // 窗口状态插件恢复后再显示，避免闪一下默认位置
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.show();
             }
+
             let args: Vec<String> = std::env::args().collect();
-            let pending = args
+            let mut pending: Vec<PathBuf> = args
                 .iter()
                 .skip(1)
-                .find(|a| !a.starts_with('-'))
-                .map(PathBuf::from);
+                .filter(|a| !a.starts_with('-'))
+                .map(PathBuf::from)
+                .collect();
+
+            // 把 setup 前 single-instance 回调存入静态队列的文件也合并进来
+            if let Ok(mut q) = static_queue().lock() {
+                pending.extend(q.drain(..));
+            }
+
             app.manage(AppState {
-                pending_file: Mutex::new(pending),
+                pending_files: Mutex::new(pending),
             });
             Ok(())
         })
@@ -104,7 +160,8 @@ pub fn run() {
             allow_dir,
             allow_save_file,
             allow_font_file,
-            get_pending_file
+            get_pending_files,
+            drain_queued_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

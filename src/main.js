@@ -13,7 +13,7 @@ import hljs from "highlight.js/lib/core";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import STRINGS from "./strings.js";
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 import bash from "highlight.js/lib/languages/bash";
 import c from "highlight.js/lib/languages/c";
 import cpp from "highlight.js/lib/languages/cpp";
@@ -978,13 +978,7 @@ async function checkForUpdates(silent) {
   try {
     const update = await checkUpdate();
     if (update && update.available) {
-      const msg = "发现新版本 v" + update.version + "！\n\n" +
-        (update.body ? update.body + "\n\n" : "") +
-        "是否现在下载并安装？";
-      if (confirm(msg)) {
-        await update.downloadAndInstall();
-        await invoke("plugin:updater|restart");
-      }
+      showUpdateDialog(update);
     } else if (!silent) {
       alert(STRINGS.update_no_update);
     }
@@ -992,6 +986,40 @@ async function checkForUpdates(silent) {
     if (!silent) alert(STRINGS.update_fail + String(err));
     console.warn("update check failed:", err);
   }
+}
+
+function showUpdateDialog(update) {
+  const overlay = document.getElementById("update-overlay");
+  const panel = document.getElementById("update-panel");
+  document.getElementById("update-version").textContent = update.version;
+  document.getElementById("update-notes").textContent = update.body || "";
+  overlay.classList.remove("hidden");
+  panel.classList.remove("hidden");
+
+  function close() {
+    overlay.classList.add("hidden");
+    panel.classList.add("hidden");
+    document.removeEventListener("keydown", onKey);
+  }
+
+  function onKey(e) {
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+  }
+  document.addEventListener("keydown", onKey);
+
+  overlay.onclick = close;
+  document.getElementById("update-close").onclick = close;
+  document.getElementById("update-cancel").onclick = close;
+
+  document.getElementById("update-confirm").onclick = async () => {
+    close();
+    try {
+      await update.downloadAndInstall();
+      await invoke("plugin:updater|restart");
+    } catch (err) {
+      alert(STRINGS.update_fail + String(err));
+    }
+  };
 }
 
 function closeSettings() {
@@ -1634,9 +1662,26 @@ window.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const pending = await invoke("get_pending_file");
-    if (pending) await openPath(pending);
+    const pendingFiles = await invoke("get_pending_files");
+    if (Array.isArray(pendingFiles)) {
+      for (const p of pendingFiles) {
+        await openPath(p);
+      }
+    }
   } catch {}
+
+  // 轮询队列：single-instance handler 在前端 listen 就绪前就把文件存入队列，
+  // 这里每秒检查一次，确保不丢失任何文件
+  setInterval(async () => {
+    try {
+      const queued = await invoke("drain_queued_files");
+      if (Array.isArray(queued) && queued.length > 0) {
+        for (const p of queued) {
+          await openPath(p);
+        }
+      }
+    } catch {}
+  }, 1000);
 
   await setupDragDrop();
 

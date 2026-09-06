@@ -229,10 +229,10 @@
 
   <div id="about-overlay" class="hidden"></div>
   <div id="about-panel" class="hidden" role="dialog" aria-label="关于 Kinglet">
-    <button id="about-close" title="关闭 (Esc)">×</button>
+    <button id="about-close" title="关闭 (Esc)">&times;</button>
     <div class="about-app">
       <div class="about-wordmark">Kinglet</div>
-      <div class="about-version">v<span id="about-version">1.0.0</span></div>
+      <div class="about-version">v<span id="about-version">1.0.2</span></div>
     </div>
     <p class="about-tagline" data-i18n="about_tagline"></p>
     <div class="about-body">
@@ -245,7 +245,21 @@
         <span>GPL-3.0</span>
       </div>
     </div>
-    <p class="about-copyright">© 2026 BExhei</p>
+    <p class="about-copyright">&copy; 2026 BExhei</p>
+  </div>
+
+  <div id="update-overlay" class="hidden"></div>
+  <div id="update-panel" class="hidden" role="dialog" aria-label="检查更新">
+    <button id="update-close" title="关闭 (Esc)">&times;</button>
+    <div class="update-header">
+      <div class="update-title" data-i18n="update_available_title">发现新版本</div>
+      <div class="update-ver">v<span id="update-version"></span></div>
+    </div>
+    <pre id="update-notes" class="update-notes"></pre>
+    <div class="update-actions">
+      <button id="update-cancel" class="update-btn update-btn-cancel" data-i18n="update_skip">稍后再说</button>
+      <button id="update-confirm" class="update-btn update-btn-confirm" data-i18n="update_confirm_btn">更新</button>
+    </div>
   </div>
 
   <script type="module" src="./main.js"></script>
