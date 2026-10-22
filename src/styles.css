@@ -1905,6 +1905,39 @@ mark.current {
   outline: 2px solid var(--accent);
 }
 
+/* ---------- 轻提示 toast ---------- */
+/* 链接失效 / 非 Markdown 等低风险反馈：底部居中、2s 自动消失（见 showToast）。
+   全用主题变量，6 套主题自动适配；放底部是为了不遮住正在读的那一行 */
+
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%) translateY(8px);
+  max-width: 60vw;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-raised);
+  color: var(--fg-muted);
+  box-shadow: var(--shadow);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 2000;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ---------- 打印 ---------- */
 
 @page {
@@ -1953,7 +1986,8 @@ mark.current {
   #update-overlay,
   #search-section,
   #new-tab-btn,
-  #tab-controls {
+  #tab-controls,
+  #toast {
     display: none !important;
   }
 

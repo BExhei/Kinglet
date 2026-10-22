@@ -13,7 +13,7 @@ import hljs from "highlight.js/lib/core";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import STRINGS from "./strings.js";
-const APP_VERSION = "1.0.2";
+const APP_VERSION = "1.0.3";
 import bash from "highlight.js/lib/languages/bash";
 import c from "highlight.js/lib/languages/c";
 import cpp from "highlight.js/lib/languages/cpp";
@@ -71,6 +71,41 @@ marked.use({
   gfm: true,
   breaks: false,
   async: false,
+});
+
+// 双链（Obsidian 风格）：[[目标]] / [[目标|别名]] / [[目标#标题]]
+// 目标按当前文档所在目录解析（可带子目录，如 [[sub/note]]），无扩展名时补 .md。
+// 渲染成普通 <a>，跳转由 handleDocumentClick 统一处理（解码 + 路径规范化 + 失效提示）。
+marked.use({
+  extensions: [
+    {
+      name: "wikilink",
+      level: "inline",
+      start(src) {
+        return src.indexOf("[[");
+      },
+      tokenizer(src) {
+        const m = /^\[\[([^\[\]|#]+?)(?:#([^\[\]|]+?))?(?:\|([^\[\]]+?))?\]\]/.exec(src);
+        if (!m) return;
+        const target = m[1].trim();
+        const hash = (m[2] || "").trim();
+        const label = (m[3] || "").trim() || target;
+        let file = target;
+        if (!/\.[a-z0-9]+$/i.test(file)) file += ".md";
+        // encodeURI 不转义 #，文件名里的 # 得自己转，否则会被当成 fragment
+        const href = encodeURI(file).replace(/#/g, "%23") + (hash ? "#" + encodeURI(hash) : "");
+        return {
+          type: "wikilink",
+          raw: m[0],
+          href,
+          tokens: this.lexer.inlineTokens(label),
+        };
+      },
+      renderer(token) {
+        return `<a href="${token.href}" data-wikilink="1">${this.parser.parseInline(token.tokens)}</a>`;
+      },
+    },
+  ],
 });
 
 function renderMath(text) {
@@ -415,8 +450,10 @@ async function openPath(path) {
     const baseDir = path.replace(/[\\/][^\\/]*$/, "");
     await invoke("allow_dir", { path: baseDir }).catch(() => {});
     createTab(path, content);
+    return true;
   } catch (err) {
     console.error("openPath error:", err, "| path:", path);
+    return false;
   }
 }
 
@@ -1068,6 +1105,29 @@ function setUIStrings() {
   document.documentElement.style.setProperty("--str-footnotes-label", '"' + STRINGS.footnotes_label + '"');
 }
 
+// ============================================================
+// 轻提示（底部居中，2s 自动消失）
+// 正文视觉区在顶部/中部，提示放底部不遮挡正在读的那一行；
+// 不用弹窗是因为「链接失效」属于低风险反馈，弹窗会打断阅读。
+// ============================================================
+
+let toastTimer = null;
+
+function showToast(msg) {
+  const el = document.getElementById("toast");
+  if (!el || !msg) return;
+  el.textContent = msg;
+  el.classList.remove("hidden");
+  // 强制 reflow，保证连续两次提示都能重放淡入动画
+  void el.offsetWidth;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.classList.remove("show");
+    toastTimer = setTimeout(() => el.classList.add("hidden"), 200);
+  }, 2000);
+}
+
 function setupSettings() {
   loadSettings();
   applySettings();
@@ -1150,39 +1210,156 @@ function setupSettings() {
 // Click handling on rendered document
 // ============================================================
 
+// marked 的 cleanUrl 会对 href 做 encodeURI（中文文件名、空格都会变成 %XX），
+// 而 href 里第一个 # 一定是 fragment 分隔符 —— 先拆 # 再分别解码，
+// 这样文件名本身含 # 的情况（写作 %23）也不会被误拆。
+function splitHref(href) {
+  const i = href.indexOf("#");
+  return i === -1
+    ? { path: href, hash: "" }
+    : { path: href.slice(0, i), hash: href.slice(i + 1) };
+}
+
+function safeDecodeURI(s) {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
+}
+
+// 把相对链接拼到当前文档所在目录，并把 . / .. 规范化。
+// 必须在 JS 侧消掉 ..：Tauri 的 SafePathBuf 会直接拒绝含 .. 的路径
+// （"cannot traverse directory"），所以 ../note.md 这类链接传进去必失败。
+// 分隔符跟随 base 的风格，避免同一个文件因 / 和 \ 不同被开成两个标签。
+function resolveLocalPath(base, rel) {
+  const sep = base.includes("\\") ? "\\" : "/";
+  const segs = (base.replace(/[\\/]+/g, "/") + "/" + rel.replace(/[\\/]+/g, "/")).split("/");
+  const out = [];
+  for (const seg of segs) {
+    if (!seg || seg === ".") continue;
+    if (seg === "..") {
+      if (out.length > 1) out.pop(); // 不越过盘符根
+      continue;
+    }
+    out.push(seg);
+  }
+  return out.join(sep);
+}
+
+const MARKDOWN_LINK_RE = /\.(md|markdown|txt)$/i;
+
+function fileNameOf(path) {
+  return String(path).replace(/[\\/]+$/, "").split(/[\\/]/).pop() || String(path);
+}
+
+// 页内锚点：#fn1 这类真实存在的 id 直接命中；中文标题链接没有 id 可查
+// （marked 不给标题生成 id），退化为按标题文本匹配。
+function scrollToAnchor(hash) {
+  if (!hash) return false;
+  let el = document.getElementById(hash);
+  if (!el) el = findHeadingByText(hash);
+  if (!el) return false;
+  scrollTargetIntoView(el);
+  return true;
+}
+
+function findHeadingByText(text) {
+  const key = normalizeHeadingText(text);
+  if (!key) return null;
+  const heads = document.querySelectorAll(
+    "#document-view h1, #document-view h2, #document-view h3, " +
+      "#document-view h4, #document-view h5, #document-view h6"
+  );
+  let partial = null;
+  for (const h of heads) {
+    const t = normalizeHeadingText(h.textContent);
+    if (t === key) return h;
+    if (!partial && t.includes(key)) partial = h;
+  }
+  return partial;
+}
+
+function normalizeHeadingText(s) {
+  return String(s)
+    .replace(/^#+\s*/, "")
+    .replace(/\s+/g, "")
+    .toLowerCase();
+}
+
+// 打开本地 Markdown/TXT：已开过就切过去，带 #标题 时定位到对应标题。
+// 切换已开标签是异步重渲染的，所以锚点定位给几次重试。
+async function openLocalDocument(path, hash) {
+  const ok = await openPath(path);
+  if (!ok) {
+    showToast(STRINGS.error_link_missing + fileNameOf(path));
+    return;
+  }
+  if (!hash) return;
+  for (let i = 0; i < 6; i++) {
+    if (scrollToAnchor(hash)) return;
+    await new Promise((r) => setTimeout(r, 80));
+  }
+}
+
 async function handleDocumentClick(e) {
   const anchor = e.target.closest("a[href]");
   if (!anchor) return;
-  const href = anchor.getAttribute("href");
-  if (!href) return;
+  const rawHref = anchor.getAttribute("href");
+  if (!rawHref) return;
 
-  if (href.startsWith("#")) {
-    const target = document.getElementById(href.slice(1));
-    if (target) {
-      e.preventDefault();
-      scrollTargetIntoView(target);
-    }
+  // 正文里的链接一律不让 WebView 自己导航：同源导航会把整个应用重载回欢迎页，
+  // 已打开的标签页全部丢失（旧版点 `note.md#标题` 或非 md 链接就是这个后果）。
+  e.preventDefault();
+
+  // 1) 页内锚点
+  if (rawHref.startsWith("#")) {
+    scrollToAnchor(safeDecodeURI(rawHref.slice(1)));
     return;
   }
 
-  if (/^https?:\/\//i.test(href)) {
-    e.preventDefault();
+  // 2) 外部链接
+  if (/^(https?:|mailto:|tel:)/i.test(rawHref)) {
     try {
-      await openUrl(href);
+      await openUrl(rawHref);
     } catch (err) {
       console.error("openUrl error:", err);
+      showToast(STRINGS.error_open_file + rawHref);
     }
     return;
   }
 
+  // 3) 其它 scheme（file: / asset: / data: / 自定义协议）在阅读器里没有意义。
+  // 单个字母的 scheme 是 Windows 盘符（C:\x.md），不能用这个正则一并拦掉。
+  if (/^[a-z][a-z0-9+.-]+:/i.test(rawHref)) return;
+
+  // 4) 本地相对路径
   const active = tabs.find((t) => t.id === activeTabId);
   if (!active || !active.filePath) return;
-  const base = active.filePath.replace(/\/?[^/]*$/, "");
-  const joined = href.startsWith("/") ? href : `${base}/${href}`;
-  if (/\.(md|markdown)$/i.test(joined)) {
-    e.preventDefault();
-    openPath(joined);
+  const { path: hrefPath, hash } = splitHref(rawHref);
+  const relPath = safeDecodeURI(hrefPath);
+  if (!relPath) return;
+  const base = active.baseDir || active.filePath.replace(/[\\/][^\\/]*$/, "");
+  const target = resolveLocalPath(base, relPath);
+  const targetHash = hash ? safeDecodeURI(hash) : "";
+
+  // 非 Markdown（图片/PDF/文件夹…）：默认只提示，避免单击就弹出外部程序；
+  // Ctrl+单击才交给系统默认程序打开。
+  if (!MARKDOWN_LINK_RE.test(target)) {
+    if (e.ctrlKey) {
+      try {
+        await invoke("open_external_file", { path: target });
+      } catch (err) {
+        console.error("open_external_file error:", err, "| path:", target);
+        showToast(STRINGS.error_link_missing + fileNameOf(target));
+      }
+    } else {
+      showToast(STRINGS.error_link_not_markdown + fileNameOf(target));
+    }
+    return;
   }
+
+  await openLocalDocument(target, targetHash);
 }
 
 // ============================================================
@@ -1240,10 +1417,9 @@ async function startFileWatcher() {
   stopFileWatcher();
   const tab = tabs.find((t) => t.id === activeTabId);
   if (!tab || tab.isPlain || !tab.filePath) return;
-  // 轮询兜底（一定生效）
-  startFilePoll(tab);
-  // 主路径：OS 原生文件变更通知。监听父目录更可靠（Windows 上 notify 对"文件路径"不稳），
-  // 再用文件名过滤，只响应目标文件。
+  // 主路径：OS 原生文件变更通知（需要 plugin-fs 的 watch feature，见 Cargo.toml）。
+  // 监听父目录更可靠（Windows 上 notify 对"文件路径"不稳），再用文件名过滤，
+  // 只响应目标文件。只有原生通知不可用（未编入 feature / 平台不支持）时才退回轮询。
   const dir = tab.filePath.replace(/[\\/][^\\/]*$/, "");
   const target = tab.filePath.replace(/\\/g, "/");
   try {
@@ -1262,6 +1438,7 @@ async function startFileWatcher() {
     }, { delayMs: 500 });
   } catch (err) {
     console.warn("fs.watch unavailable, polling fallback active:", err);
+    startFilePoll(tab);
   }
 }
 

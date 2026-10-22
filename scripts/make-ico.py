@@ -1,5 +1,11 @@
 """Build a multi-size Windows .ico with UNCOMPRESSED BMP (DIB) images.
 
+Size order matters: tauri-codegen (windows) takes `IconDir::entries()[0]` as the
+app's default WINDOW icon, and Windows then upscales that single bitmap for the
+taskbar / Alt+Tab. Largest first, so the window icon is 256x256 instead of a
+blurry upscaled 16x16. Windows itself picks the right frame by size for the
+Explorer / file-association icon, so the order does not hurt there.
+
 Why not Pillow / `npx tauri icon`:
   * Pillow's ICO writer silently drops sizes and stores 256px as PNG.
   * `npx tauri icon` emits PNG-compressed images inside the .ico, which
@@ -22,7 +28,8 @@ import sys
 import numpy as np
 from PIL import Image
 
-DEFAULT_SIZES = [16, 24, 32, 48, 64, 128, 256]
+# 最大在前：见文件头注释（窗口图标取 entries[0]）
+DEFAULT_SIZES = [256, 128, 64, 48, 32, 24, 16]
 
 
 def dib_for(img: Image.Image) -> bytes:
@@ -117,6 +124,12 @@ def verify(src: Image.Image, ico_path: str, sizes) -> None:
         off = struct.unpack_from("<I", raw, 6 + 16 * i + 12)[0]
         if raw[off:off + 4] == b"\x89PNG":
             bad.append("png-compressed image #%d" % i)
+
+    # 窗口图标 = entries[0]（tauri-codegen 只取第一条），必须放最大帧，否则
+    # Windows 会把小图放大到 48px 显示在任务栏，看起来是糊的
+    first_w = raw[6] or 256
+    if first_w != max(sizes):
+        bad.append("entries[0] is %dpx, must be the largest (%dpx)" % (first_w, max(sizes)))
 
     if bad:
         raise SystemExit("FAIL verification: %s" % bad)

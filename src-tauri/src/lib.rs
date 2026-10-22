@@ -5,6 +5,7 @@ use std::sync::{Mutex, OnceLock};
 use tauri::Emitter;
 use tauri::Manager;
 use tauri_plugin_fs::FsExt;
+use tauri_plugin_opener::OpenerExt;
 
 /// 模块级静态队列——在 single-instance 回调中使用，不依赖 setup。
 /// Windows `%1` 逐文件调用 exe，single-instance 回调可能在 setup 之前触发，
@@ -53,7 +54,12 @@ fn allow_dir(app: tauri::AppHandle, path: String) -> Result<(), String> {
     }
     app.asset_protocol_scope()
         .allow_directory(&p, true)
-        .map_err(|e| format!("allow_dir failed: {e}"))
+        .map_err(|e| format!("allow_dir failed: {e}"))?;
+    // fs_scope 也必须放行：图片走 asset 协议，但 watch 命令是按 fs scope 校验目录的，
+    // 只登记 asset scope 的话 watch 会报 "forbidden path" 并静默退回 2 秒轮询。
+    app.fs_scope()
+        .allow_directory(&p, true)
+        .map_err(|e| format!("allow_dir (fs scope) failed: {e}"))
 }
 
 /// 导出备份用：目标文件通常还不存在，因此只校验父目录，
@@ -68,6 +74,20 @@ fn allow_save_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
             .map_err(|e| format!("allow_save_file failed: {e}")),
         _ => Err("parent directory does not exist".into()),
     }
+}
+
+/// 正文里点非 Markdown 的本地文件（Ctrl+单击）时，用系统默认程序打开。
+/// 走 Rust 侧 OpenerExt 而不是前端的 opener 插件：插件命令要过 scope 校验，
+/// 而链接能指向的任意路径不可能预先登记在 capability 里。
+#[tauri::command]
+fn open_external_file(app: tauri::AppHandle, path: String) -> Result<(), String> {
+    let p = PathBuf::from(&path);
+    if !p.exists() {
+        return Err("not found".into());
+    }
+    app.opener()
+        .open_path(p.to_string_lossy().into_owned(), None::<String>)
+        .map_err(|e| format!("open_path failed: {e}"))
 }
 
 #[tauri::command]
@@ -160,6 +180,7 @@ pub fn run() {
             allow_dir,
             allow_save_file,
             allow_font_file,
+            open_external_file,
             get_pending_files,
             drain_queued_files
         ])

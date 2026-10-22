@@ -1,7 +1,7 @@
 {
   "name": "kinglet",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "type": "module",
   "description": "Kinglet — Open it, read it — distraction-free",
   "author": "BExhei",

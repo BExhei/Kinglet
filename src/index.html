@@ -232,7 +232,7 @@
     <button id="about-close" title="关闭 (Esc)">&times;</button>
     <div class="about-app">
       <div class="about-wordmark">Kinglet</div>
-      <div class="about-version">v<span id="about-version">1.0.2</span></div>
+      <div class="about-version">v<span id="about-version">1.0.3</span></div>
     </div>
     <p class="about-tagline" data-i18n="about_tagline"></p>
     <div class="about-body">
@@ -261,6 +261,9 @@
       <button id="update-confirm" class="update-btn update-btn-confirm" data-i18n="update_confirm_btn">更新</button>
     </div>
   </div>
+
+  <!-- 轻提示：链接失效/非 Markdown 等低风险反馈，2s 自动消失（见 showToast） -->
+  <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
   <script type="module" src="./main.js"></script>
 </body>

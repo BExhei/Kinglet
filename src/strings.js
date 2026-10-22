@@ -138,6 +138,8 @@ const STRINGS = {
 
   // ===== 错误 =====
   error_open_file: "打开文件失败：",
+  error_link_missing: "找不到文件：",
+  error_link_not_markdown: "不是 Markdown 文件（Ctrl+单击用默认程序打开）：",
   error_custom_font_fail: "字体文件加载失败（可能已被移动或删除）",
   error_pick_font_fail: "选择字体失败：",
 
