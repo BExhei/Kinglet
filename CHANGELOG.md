@@ -4,6 +4,13 @@ All notable changes to Kinglet will be documented in this file.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.4] - 2026-10-23
+
+### Fixed
+- **`.md` 文件图标被误换成软件 logo** — v1.0.3 重做图标时，`.md` 专属文档图标（`src-tauri/icons/md-file.ico`）的源图搞错了（用了软件图标的 `icon.png`，应为 `md-file-src.png`），两个 `.ico` 落到同一份字节，资源管理器里所有 `.md` / `.markdown` 显示成应用 logo。现已重新生成并做逐尺寸像素校验；`.md` 图标（`md-file.ico`）必须与应用图标（`icon.ico`）哈希不同
+- **更新弹窗标题显示字面量 `{version}`** — 标题改为固定文案「发现新版本」（版本号本就在标题下单独一行显示）；顺手删掉同段无引用的死字符串 `update_available_body`
+- **「检查更新」的提示改用主题化面板** — 「当前已是最新版本」「浏览器模式下无法检查更新」「检查更新失败」「更新失败」原先走系统原生 `alert()`，看着像浏览器警告；现为与更新弹窗同一套样式的居中面板（同一遮罩 / 圆角 / 边框 / 按钮，宽 320px，单按钮「知道了」），Esc、×、点遮罩、按钮均可关闭
+
 ## [1.0.3] - 2026-10-22
 
 ### Fixed

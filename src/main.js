@@ -13,7 +13,7 @@ import hljs from "highlight.js/lib/core";
 import katex from "katex";
 import "katex/dist/katex.min.css";
 import STRINGS from "./strings.js";
-const APP_VERSION = "1.0.3";
+const APP_VERSION = "1.0.4";
 import bash from "highlight.js/lib/languages/bash";
 import c from "highlight.js/lib/languages/c";
 import cpp from "highlight.js/lib/languages/cpp";
@@ -1009,7 +1009,7 @@ function resetAllData() {
 
 async function checkForUpdates(silent) {
   if (!isTauri()) {
-    if (!silent) alert(STRINGS.update_browser_mode);
+    if (!silent) showNotice(STRINGS.update_browser_mode);
     return;
   }
   try {
@@ -1017,10 +1017,10 @@ async function checkForUpdates(silent) {
     if (update && update.available) {
       showUpdateDialog(update);
     } else if (!silent) {
-      alert(STRINGS.update_no_update);
+      showNotice(STRINGS.update_no_update);
     }
   } catch (err) {
-    if (!silent) alert(STRINGS.update_fail + String(err));
+    if (!silent) showNotice(STRINGS.update_fail + String(err));
     console.warn("update check failed:", err);
   }
 }
@@ -1054,9 +1054,35 @@ function showUpdateDialog(update) {
       await update.downloadAndInstall();
       await invoke("plugin:updater|restart");
     } catch (err) {
-      alert(STRINGS.update_fail + String(err));
+      showNotice(String(err), STRINGS.update_install_fail);
     }
   };
+}
+
+function showNotice(message, title) {
+  const overlay = document.getElementById("notice-overlay");
+  const panel = document.getElementById("notice-panel");
+  if (!overlay || !panel) return;
+  document.getElementById("notice-title").textContent = title || STRINGS.update_notice_title;
+  document.getElementById("notice-body").textContent = message || "";
+  overlay.classList.remove("hidden");
+  panel.classList.remove("hidden");
+
+  function close() {
+    overlay.classList.add("hidden");
+    panel.classList.add("hidden");
+    overlay.onclick = null;
+    document.removeEventListener("keydown", onKey);
+  }
+
+  function onKey(e) {
+    if (e.key === "Escape") { e.preventDefault(); close(); }
+  }
+  document.addEventListener("keydown", onKey);
+
+  overlay.onclick = close;
+  document.getElementById("notice-close").onclick = close;
+  document.getElementById("notice-ok").onclick = close;
 }
 
 function closeSettings() {

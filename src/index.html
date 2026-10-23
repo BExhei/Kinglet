@@ -232,7 +232,7 @@
     <button id="about-close" title="关闭 (Esc)">&times;</button>
     <div class="about-app">
       <div class="about-wordmark">Kinglet</div>
-      <div class="about-version">v<span id="about-version">1.0.3</span></div>
+      <div class="about-version">v<span id="about-version">1.0.4</span></div>
     </div>
     <p class="about-tagline" data-i18n="about_tagline"></p>
     <div class="about-body">
@@ -259,6 +259,19 @@
     <div class="update-actions">
       <button id="update-cancel" class="update-btn update-btn-cancel" data-i18n="update_skip">稍后再说</button>
       <button id="update-confirm" class="update-btn update-btn-confirm" data-i18n="update_confirm_btn">更新</button>
+    </div>
+  </div>
+
+  <!-- 检查更新结果提示：与更新弹窗同一套样式的小面板（替代原生 alert） -->
+  <div id="notice-overlay" class="hidden"></div>
+  <div id="notice-panel" class="hidden" role="dialog" aria-labelledby="notice-title">
+    <button id="notice-close" title="关闭 (Esc)" data-i18n-title="close_esc_title">&times;</button>
+    <div class="update-header">
+      <div class="update-title" id="notice-title" data-i18n="update_notice_title">检查更新</div>
+    </div>
+    <pre id="notice-body" class="update-notes"></pre>
+    <div class="update-actions">
+      <button id="notice-ok" class="update-btn update-btn-confirm" data-i18n="notice_ok">知道了</button>
     </div>
   </div>
 

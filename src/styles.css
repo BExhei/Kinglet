@@ -1302,18 +1302,22 @@ body[data-font="custom"] #document-view h4 {
   color: var(--fg-muted);
 }
 
-/* ===== Update dialog ===== */
-#update-overlay {
+/* ===== Update dialog / notice（同一套样式）===== */
+#update-overlay,
+#notice-overlay {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.28);
   z-index: 50;
 }
 #update-overlay.hidden,
-#update-panel.hidden {
+#update-panel.hidden,
+#notice-overlay.hidden,
+#notice-panel.hidden {
   display: none;
 }
-#update-panel {
+#update-panel,
+#notice-panel {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -1327,7 +1331,8 @@ body[data-font="custom"] #document-view h4 {
   padding: 24px 24px 20px;
   animation: about-in 0.18s ease;
 }
-#update-close {
+#update-close,
+#notice-close {
   position: absolute;
   top: 12px;
   right: 12px;
@@ -1340,6 +1345,9 @@ body[data-font="custom"] #document-view h4 {
   line-height: 1;
   border-radius: 6px;
   cursor: pointer;
+}
+#notice-panel {
+  width: 320px;
 }
 #update-close:hover {
   background: var(--bg-sunken);
@@ -1984,6 +1992,8 @@ mark.current {
   #about-overlay,
   #update-panel,
   #update-overlay,
+  #notice-panel,
+  #notice-overlay,
   #search-section,
   #new-tab-btn,
   #tab-controls,

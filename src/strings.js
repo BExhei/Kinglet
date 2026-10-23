@@ -114,14 +114,17 @@ const STRINGS = {
   floating_search_placeholder: "页内查找…",
 
   // ===== 更新 =====
-  update_available_title: "发现新版本 v{version}！",
-  update_available_body: "{notes}\n\n是否现在下载并安装？",
+  update_available_title: "发现新版本",
   update_confirm_btn: "更新",
   update_skip: "稍后再说",
   update_no_update: "当前已是最新版本",
   update_browser_mode: "浏览器模式下无法检查更新",
   update_fail: "检查更新失败：",
   update_downloading: "正在下载更新…",
+  update_notice_title: "检查更新",
+  update_install_fail: "更新失败",
+  notice_ok: "知道了",
+  close_esc_title: "关闭 (Esc)",
 
   // ===== 关于 =====
   about_title: "\u5173\u4e8e Kinglet",
