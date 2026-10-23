@@ -1,11 +1,11 @@
 {
-  "version": "1.0.3",
-  "notes": "Kinglet v1.0.3 — 文档内链接跳转修复（本地 md 链接可打开、点链接不再丢标签）+ 双链支持 + 原生文件监控 + 任务栏图标清晰度修复",
-  "pub_date": "2026-10-22T15:43:56Z",
+  "version": "1.0.4",
+  "notes": "Kinglet v1.0.4 — .md 文件图标修复（v1.0.3 误把文档图标换成了软件 logo）+ 更新弹窗标题不再显示 {version} + 「检查更新」提示改用应用内面板",
+  "pub_date": "2026-10-23T02:50:01Z",
   "platforms": {
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTMUVMaUE1MElBMkRwQ1RLR2RsSFZsU3NzMnRQQXNSVUhZdUp0cG1QY0RzNmxTU1Arb0ZMWG41dkZlaDl5MUIyVTdRYmVWQ0JyaGdPbVJmSFYxa2ZvSTkwQ0psOTk3blFJPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNjgzODM1CWZpbGU6S2luZ2xldF8xLjAuM194NjQtc2V0dXAuZXhlCjU2cml3WDlrVWtiaFA0SDdsK3hkZ212bnNndG5GQyt2VXdEK0tvRWN1NDl4OTFrRUlkcHFmTjJKbWIyWFpMSFdXbXVZeEhGRVU3NjZ2cmJqWlcrdEF3PT0K",
-      "url": "https://github.com/BExhei/Kinglet/releases/download/v1.0.3/Kinglet_1.0.3_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTMUVMaUE1MElBMk92TlgzbXJMUnJTazB5YWFsbThqa3BCQjdBQk9odEN5UEJtSnowVHc1L3ZVM1hKaFNUVmEzREZ1RGI5MkdieXBRYk9yV3ViclJ1dkhxeTM1Y0hjZnd3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzkyNzIzNTE2CWZpbGU6S2luZ2xldF8xLjAuNF94NjQtc2V0dXAuZXhlCmMvdWhHQi8yRE5talM2UGRVaFQ0eFNqa21Gb0s1bGJPbDZSTVRvdW05eURqYjU2TTJJakRFeXpRYVQwZzlPVi81aEF3TUVheUZ4MUE2QzBtV2xZYUJRPT0K",
+      "url": "https://github.com/BExhei/Kinglet/releases/download/v1.0.4/Kinglet_1.0.4_x64-setup.exe"
     }
   }
 }
